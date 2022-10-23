@@ -11,6 +11,8 @@
   <ItemGroup>
     <None Remove="bel.png" />
     <None Remove="Figures\chern.png" />
+    <None Remove="Figures\queenbel.png" />
+    <None Remove="Figures\queenchern.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +20,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Figures\chern.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Figures\queenbel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Figures\queenchern.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

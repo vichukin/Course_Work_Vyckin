@@ -20,14 +20,17 @@ namespace Course_Work_Vyckin
             Letters.Add(7, "G");
             Letters.Add(8, "H");
         }
-        Dictionary<int,string> Letters = new Dictionary<int,string>();
+        Dictionary<int, string> Letters = new Dictionary<int, string>();
         bool White = true;
 
         Bitmap black;
         Bitmap white;
+        Bitmap queenwhite;
+        Bitmap queenblack;
         Dictionary<Panel, (int, int)> RowAndCow = new Dictionary<Panel, (int, int)>();
         List<Panel> playing_fields = new List<Panel>();
         List<Panel> Forward = new List<Panel>();
+        List<Panel> Queens = new List<Panel>();
         private void Form1_Load(object sender, EventArgs e)
         {
             tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
@@ -38,7 +41,7 @@ namespace Course_Work_Vyckin
             int counter;
             if (White)
                 counter = 0;
-            else 
+            else
                 counter = 1;
             //Label lb = new Label();
             //lb.Text = "HUJ";
@@ -51,7 +54,7 @@ namespace Course_Work_Vyckin
                 {
 
 
-                    if ((i == 0 && j == 0) || (i == 9 && j == 9)||(i==0&&j==9)||(i==9&&j==0))
+                    if ((i == 0 && j == 0) || (i == 9 && j == 9) || (i == 0 && j == 9) || (i == 9 && j == 0))
                     {
                         //Label l = new Label();
                         ////l.Text = Letters[j];
@@ -60,14 +63,14 @@ namespace Course_Work_Vyckin
                         //tableLayoutPanel1.SetRow(l, i);
                         //tableLayoutPanel1.SetColumn(l, j - 1);
                     }
-                    else if(i == 0||i==9)
+                    else if (i == 0 || i == 9)
                     {
                         Label l = new Label();
                         l.Text = Letters[j];
                         l.Size = new Size(70, 70);
                         //l.BackColor= Color.BlanchedAlmond;
-                        l.Margin = new Padding(0,0,0,0);
-                        
+                        l.Margin = new Padding(0, 0, 0, 0);
+
                         //Font f = new Font("Segoe", 10, FontStyle.Bold);
                         l.Font = new Font("Segoe", 15, FontStyle.Bold);
                         if (i == 0)
@@ -76,12 +79,12 @@ namespace Course_Work_Vyckin
                             l.TextAlign = ContentAlignment.TopCenter;
                         tableLayoutPanel1.Controls.Add(l);
                         tableLayoutPanel1.SetRow(l, i);
-                        tableLayoutPanel1.SetColumn(l, j );
+                        tableLayoutPanel1.SetColumn(l, j);
                         //tableLayoutPanel1.SetCellPosition(l, new TableLayoutPanelCellPosition(j, i));
                         //this.Text = tableLayoutPanel1.GetCellPosition(l).ToString();
                         //this.Text= tableLayoutPanel1.ColumnCount.ToString();
                     }
-                    else if(j==0 || j == 9)
+                    else if (j == 0 || j == 9)
                     {
                         Label l = new Label();
                         if (White)
@@ -89,7 +92,7 @@ namespace Course_Work_Vyckin
                         else
                             l.Text = i.ToString();
                         l.Margin = new Padding(0);
-                        l.Size = new Size(70,70);
+                        l.Size = new Size(70, 70);
                         //l.BorderStyle = BorderStyle.FixedSingle;
                         //Font f = new Font("Segoe", 10, FontStyle.Bold);
                         l.Font = new Font("Segoe", 15, FontStyle.Bold);
@@ -127,10 +130,10 @@ namespace Course_Work_Vyckin
                     }
                     counter++;
                 }
-                    counter -= 7;
+                counter -= 7;
             }
             GetDesk();
-            
+
         }
 
         private void TableLayoutPanel1_Paint(object? sender, PaintEventArgs e)
@@ -141,13 +144,19 @@ namespace Course_Work_Vyckin
 
         void GetDesk()
         {
-            
+
             Image img = Image.FromFile("Figures/chern.png");
             black = new Bitmap(img, playing_fields.First().Size);
             img.Dispose();
-
             img = Image.FromFile("Figures/bel.png");
             white = new Bitmap(img, playing_fields.First().Size);
+            img.Dispose();
+            img = Image.FromFile("Figures/queenbel.png");
+            queenwhite = new Bitmap(img, playing_fields.First().Size);
+            img.Dispose();
+            img = Image.FromFile("Figures/queenchern.png");
+            queenblack = new Bitmap(img, playing_fields.First().Size);
+            img.Dispose();
             for (int i = 0; i < 12; i++)
             {
                 Panel p = playing_fields[i];
@@ -164,7 +173,7 @@ namespace Course_Work_Vyckin
                 }
                 else
                 {
-                    
+
                     p.BackgroundImage = white;
                     p.BackgroundImage.Tag = "white";
                 }
@@ -183,13 +192,13 @@ namespace Course_Work_Vyckin
                     p.BackgroundImage = black;
                     p.BackgroundImage.Tag = "Black";
                 }
-                
-                
+
+
                 Forward.Add(p);
                 //img.Dispose();
 
             }
-            img.Dispose();
+
         }
         List<(int, int, Panel, Panel)> FightSteps = new List<(int, int, Panel, Panel)>();
         bool IsSelectedFigure;
@@ -214,7 +223,25 @@ namespace Course_Work_Vyckin
                             FightFigures(p, SelectedFigure);
                             Forward.Remove(SelectedFigure);
                             Forward.Add(p);
-
+                            if (Queens.Contains(SelectedFigure))
+                            {
+                                Queens.Remove(SelectedFigure);
+                                Queens.Add(p);
+                            }
+                            if (b.Item2 == 1)
+                            {
+                                Queens.Add(p);
+                                if (White)
+                                {
+                                    p.BackgroundImage = queenwhite;
+                                    p.BackgroundImage.Tag = "white";
+                                }
+                                else
+                                {
+                                    p.BackgroundImage = queenblack;
+                                    p.BackgroundImage.Tag = "Black";
+                                }
+                            }
                             //c.Item1 = item.Item1 - b.Item1;
                             //c.Item2 = item.Item2 - b.Item2;
                             //Panel P = RowAndCow.Where(t => t.Value.Item1 == item.Item1 - c.Item1 + 1 && t.Value.Item2 == item.Item2 - c.Item2 + 1).First().Key;
@@ -270,17 +297,53 @@ namespace Course_Work_Vyckin
                         (int, int) selected = RowAndCow[SelectedFigure];
                         if (Forward.Contains(SelectedFigure))
                         {
-                            if ((buf.Item1 == selected.Item1 - 1 && buf.Item2 == selected.Item2 - 1) || (buf.Item1 == selected.Item1 + 1 && buf.Item2 == selected.Item2 - 1))
+                            if (Queens.Contains(SelectedFigure))
                             {
-                                SwapFigures(p, SelectedFigure);
-                                Forward.Remove(SelectedFigure);
-                                Forward.Add(p);
-                                //FightSteps = MandatoryFight();
+                                List<(int, int)> Steps = new List<(int, int)>();
+                                Steps = CheckForQueen(SelectedFigure);
+                                if (Steps.Contains(buf))
+                                {
+                                    SwapFigures(p, SelectedFigure);
+                                    Forward.Remove(SelectedFigure);
+                                    Forward.Add(p);
+                                    Queens.Remove(SelectedFigure);
+                                    Queens.Add(p);
+                                }
+                                else
+                                {
+                                    SelectedFigure = null;
+                                    IsSelectedFigure = false;
+                                }
                             }
                             else
                             {
-                                SelectedFigure = null;
-                                IsSelectedFigure = false;
+                                if ((buf.Item1 == selected.Item1 - 1 && buf.Item2 == selected.Item2 - 1) || (buf.Item1 == selected.Item1 + 1 && buf.Item2 == selected.Item2 - 1))
+                                {
+                                    SwapFigures(p, SelectedFigure);
+                                    Forward.Remove(SelectedFigure);
+                                    Forward.Add(p);
+                                    this.Text = $"{buf.Item1} - {buf.Item2}";
+                                    if (buf.Item2 == 1)
+                                    {
+                                        Queens.Add(p);
+                                        if (White)
+                                        {
+                                            p.BackgroundImage = queenwhite;
+                                            p.BackgroundImage.Tag = "white";
+                                        }
+                                        else
+                                        {
+                                            p.BackgroundImage = queenblack;
+                                            p.BackgroundImage.Tag = "Black";
+                                        }
+                                    }
+                                    //FightSteps = MandatoryFight();
+                                }
+                                else
+                                {
+                                    SelectedFigure = null;
+                                    IsSelectedFigure = false;
+                                }
                             }
                         }
                         else
@@ -305,7 +368,7 @@ namespace Course_Work_Vyckin
                     {
                         IsSelectedFigure = true;
                         SelectedFigure = p;
-                        p.Invalidate();
+                        //p.Invalidate();
                     }
                 }
             }
@@ -325,6 +388,104 @@ namespace Course_Work_Vyckin
             IsSelectedFigure = false;
             SelectedFigure = null;
         }
+        List<(int, int)> CheckForQueen(Panel P)
+        {
+            List<(int, int)> result = new List<(int, int)>();
+            (int, int) Sel = RowAndCow[P];
+            (int, int) buf = Sel;
+            while (buf.Item1 >= 0 && buf.Item2 >= 0)
+            {
+                buf.Item1--;
+                buf.Item2--;
+                Panel step = RowAndCow.Where(t => t.Value == (buf.Item1, buf.Item2)).FirstOrDefault().Key;
+                if (step != null)
+                {
+                    if (step.BackgroundImage == null)
+                    {
+                        result.Add((buf.Item1, buf.Item2));
+                    }
+                    else if (step.BackgroundImage.Tag == P.BackgroundImage.Tag)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Need Fight");
+                        break;
+                    }
+                }
+            }
+            buf = Sel;
+            while (buf.Item1 <= 8 && buf.Item2 <= 8)
+            {
+                buf.Item1++;
+                buf.Item2++;
+                Panel step = RowAndCow.Where(t => t.Value == (buf.Item1, buf.Item2)).FirstOrDefault().Key;
+                if (step != null)
+                {
+                    if (step.BackgroundImage == null)
+                    {
+                        result.Add((buf.Item1, buf.Item2));
+                    }
+                    else if (step.BackgroundImage.Tag == P.BackgroundImage.Tag)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Need Fight");
+                        break;
+                    }
+                }
+            }
+            buf = Sel;
+            while (buf.Item1 >= 0 && buf.Item2 <= 8)
+            {
+                buf.Item1--;
+                buf.Item2++;
+                Panel step = RowAndCow.Where(t => t.Value == (buf.Item1, buf.Item2)).FirstOrDefault().Key;
+                if (step != null)
+                {
+                    if (step.BackgroundImage == null)
+                    {
+                        result.Add((buf.Item1, buf.Item2));
+                    }
+                    else if (step.BackgroundImage.Tag == P.BackgroundImage.Tag)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Need Fight");
+                        break;
+                    }
+                }
+            }
+            buf = Sel;
+            while (buf.Item1 <= 8 && buf.Item2 >= 0)
+            {
+                buf.Item1++;
+                buf.Item2--;
+                Panel step = RowAndCow.Where(t => t.Value == (buf.Item1, buf.Item2)).FirstOrDefault().Key;
+                if (step != null)
+                {
+                    if (step.BackgroundImage == null)
+                    {
+                        result.Add((buf.Item1, buf.Item2));
+                    }
+                    else if (step.BackgroundImage.Tag == P.BackgroundImage.Tag)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        //MessageBox.Show("Need Fight");
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
         List<(int, int, Panel)> CheckThisFight(Panel P)
         {
             List<(int, int, Panel)> ls = new List<(int, int, Panel)>();
@@ -332,51 +493,208 @@ namespace Course_Work_Vyckin
             List<Panel> Canfight = new List<Panel>();
             List<Panel> Candef = new List<Panel>();
             List<(int, int)> Steps = new List<(int, int)>();
-            for (int i = 1; i <= 2; i++)
+            if (Queens.Contains(P))
             {
-                if (i == 1)
+                Panel item = P;
+                (int, int) sel = buf;
+                int lscount = ls.Count;
+                while ((sel.Item1 >= 0 && sel.Item2 >= 0))
                 {
-                    Canfight.Add(RowAndCow.Where(t => t.Value == ((buf.Item1 - i), (buf.Item2 - i))).FirstOrDefault().Key);
-                    Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
-                    Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
-                    Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                    sel.Item1--;
+                    sel.Item2--;
+                    Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                    if (mbfight != null)
+                    {
+                        if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                        {
+                            Canfight.Add(mbfight);
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                        {
+                            Canfight.Clear();
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                        {
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                        {
+                            (int, int, Panel) b;
+                            b.Item1 = sel.Item1;
+                            b.Item2 = sel.Item2;
+                            b.Item3 = item;
+                            //b.Item4 = Canfight[Canfight.Count - 1];
+                            ls.Add(b);
+                        }
+                    }
                 }
-                else
+                Canfight.Clear();
+                sel = buf;
+                lscount = ls.Count;
+                while ((sel.Item1 <= 8 && sel.Item2 <= 8))
                 {
-
-                    Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 - i)).FirstOrDefault().Key);
-                    Steps.Add((buf.Item1 - i, buf.Item2 - i));
-                    Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
-                    Steps.Add((buf.Item1 - i, buf.Item2 + i));
-                    Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
-                    Steps.Add((buf.Item1 + i, buf.Item2 - i));
-                    Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
-                    Steps.Add((buf.Item1 + i, buf.Item2 + i));
+                    sel.Item1++;
+                    sel.Item2++;
+                    Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                    if (mbfight != null)
+                    {
+                        if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                        {
+                            Canfight.Add(mbfight);
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                        {
+                            Canfight.Clear();
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                        {
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                        {
+                            (int, int, Panel) b;
+                            b.Item1 = sel.Item1;
+                            b.Item2 = sel.Item2;
+                            b.Item3 = item;
+                            //b.Item4 = Canfight[Canfight.Count - 1];
+                            ls.Add(b);
+                        }
+                    }
+                }
+                Canfight.Clear();
+                sel = buf;
+                lscount = ls.Count;
+                while ((sel.Item1 >= 0 && sel.Item2 <= 8))
+                {
+                    sel.Item1--;
+                    sel.Item2++;
+                    Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                    if (mbfight != null)
+                    {
+                        if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count() == 0)
+                        {
+                            Canfight.Add(mbfight);
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                        {
+                            Canfight.Clear();
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                        {
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                        {
+                            (int, int, Panel) b;
+                            b.Item1 = sel.Item1;
+                            b.Item2 = sel.Item2;
+                            b.Item3 = item;
+                            //b.Item4 = Canfight[Canfight.Count - 1];
+                            ls.Add(b);
+                        }
+                    }
+                }
+                Canfight.Clear();
+                sel = buf;
+                lscount = ls.Count;
+                while ((sel.Item1 <= 8 && sel.Item2 >= 0))
+                {
+                    sel.Item1++;
+                    sel.Item2--;
+                    Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                    if (mbfight != null)
+                    {
+                        if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                        {
+                            Canfight.Add(mbfight);
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                        {
+                            Canfight.Clear();
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                        {
+                            break;
+                        }
+                        else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                        {
+                            (int, int, Panel) b;
+                            b.Item1 = sel.Item1;
+                            b.Item2 = sel.Item2;
+                            b.Item3 = item;
+                            //b.Item4 = Canfight[Canfight.Count - 1];
+                            ls.Add(b);
+                        }
+                    }
                 }
             }
-            for (int i = 0; i < 4; i++)
+            else
             {
-                if (Canfight[i] != null)
+                for (int i = 1; i <= 2; i++)
                 {
-                    if (Canfight[i].BackgroundImage != P.BackgroundImage && Canfight[i].BackgroundImage != null)
+                    if (i == 1)
                     {
-                        if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || P.BackgroundImage == Candef[i].BackgroundImage)
+                        Canfight.Add(RowAndCow.Where(t => t.Value == ((buf.Item1 - i), (buf.Item2 - i))).FirstOrDefault().Key);
+                        Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
+                        Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
+                        Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                    }
+                    else
+                    {
+
+                        Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 - i)).FirstOrDefault().Key);
+                        Steps.Add((buf.Item1 - i, buf.Item2 - i));
+                        Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
+                        Steps.Add((buf.Item1 - i, buf.Item2 + i));
+                        Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
+                        Steps.Add((buf.Item1 + i, buf.Item2 - i));
+                        Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                        Steps.Add((buf.Item1 + i, buf.Item2 + i));
+                    }
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    if (Canfight[i] != null)
+                    {
+                        if (Canfight[i].BackgroundImage != P.BackgroundImage && Canfight[i].BackgroundImage != null)
                         {
-                            //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
-                            //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
-                            //MessageBox.Show(item.BackgroundImage.Tag.ToString());
-                            //MessageBox.Show("candef");
+                            if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || P.BackgroundImage == Candef[i].BackgroundImage  )
+                            {
+                                //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
+                                //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
+                                //MessageBox.Show(item.BackgroundImage.Tag.ToString());
+                                //MessageBox.Show("candef");
 
 
-                        }
-                        else
-                        {
-                            //MessageBox.Show("can fight");
-                            (int, int, Panel) b;
-                            b.Item1 = Steps[i].Item1;
-                            b.Item2 = Steps[i].Item2;
-                            b.Item3 = P;
-                            ls.Add(b);
+                            }
+                            else
+                            {
+                                //MessageBox.Show("can fight");
+                                if (Candef[i].BackgroundImage != null)
+                                {
+                                    if (Candef[i].BackgroundImage.Tag != P.BackgroundImage.Tag || Canfight[i].BackgroundImage.Tag != Candef[i].BackgroundImage.Tag)
+                                    {
+                                        (int, int, Panel) b;
+                                        b.Item1 = Steps[i].Item1;
+                                        b.Item2 = Steps[i].Item2;
+                                        b.Item3 = P;
+                                        ls.Add(b);
+                                    }
+                                }
+                                else
+                                {
+                                    (int, int, Panel) b;
+                                    b.Item1 = Steps[i].Item1;
+                                    b.Item2 = Steps[i].Item2;
+                                    b.Item3 = P;
+                                    ls.Add(b);
+                                }
+                                
+                            }
                         }
                     }
                 }
@@ -392,55 +710,214 @@ namespace Course_Work_Vyckin
                 if (item.BackgroundImage != null)
                 {
                     (int, int) buf = RowAndCow[item];
+
                     List<Panel> Canfight = new List<Panel>();
                     List<Panel> Candef = new List<Panel>();
                     List<(int, int)> Steps = new List<(int, int)>();
-                    for (int i = 1; i <= 2; i++)
+                    if (Queens.Contains(item))
                     {
-                        if (i == 1)
+                        (int, int) sel = buf;
+                        int lscount = ls.Count;
+                        while ((sel.Item1 >= 0 && sel.Item2 >= 0))
                         {
-                            Canfight.Add(RowAndCow.Where(t => t.Value == ((buf.Item1 - i), (buf.Item2 - i))).FirstOrDefault().Key);
-                            Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
-                            Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
-                            Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                            sel.Item1--;
+                            sel.Item2--;
+                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                            if (mbfight != null)
+                            {
+                                if (mbfight.BackgroundImage!=null&& mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                                {
+                                    Canfight.Add(mbfight);
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                {
+                                    Canfight.Clear();
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                                {
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                                {
+                                    (int, int, Panel, Panel) b;
+                                    b.Item1 = sel.Item1;
+                                    b.Item2 = sel.Item2;
+                                    b.Item3 = item;
+                                    b.Item4 = Canfight[Canfight.Count - 1];
+                                    ls.Add(b);
+                                }
+                            }
                         }
-                        else
+                        sel = buf;
+                        Canfight.Clear();
+                        lscount = ls.Count;
+                        while ((sel.Item1 <=8 && sel.Item2 <=8))
                         {
-
-                            Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 - i)).FirstOrDefault().Key);
-                            Steps.Add((buf.Item1 - i, buf.Item2 - i));
-                            Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
-                            Steps.Add((buf.Item1 - i, buf.Item2 + i));
-                            Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
-                            Steps.Add((buf.Item1 + i, buf.Item2 - i));
-                            Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
-                            Steps.Add((buf.Item1 + i, buf.Item2 + i));
+                            sel.Item1++;
+                            sel.Item2++;
+                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                            if (mbfight != null)
+                            {
+                                if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                                {
+                                    Canfight.Add(mbfight);
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                {
+                                    Canfight.Clear();
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                                {
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                                {
+                                    (int, int, Panel, Panel) b;
+                                    b.Item1 = sel.Item1;
+                                    b.Item2 = sel.Item2;
+                                    b.Item3 = item;
+                                    b.Item4 = Canfight[Canfight.Count - 1];
+                                    ls.Add(b);
+                                }
+                            }
+                        }
+                        Canfight.Clear();
+                        lscount = ls.Count;
+                        sel = buf;
+                        while ((sel.Item1 >=0 && sel.Item2 <= 8))
+                        {
+                            sel.Item1--;
+                            sel.Item2++;
+                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                            if (mbfight != null)
+                            {
+                                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count() == 0)
+                                    {
+                                        Canfight.Add(mbfight);
+                                    }
+                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                    {
+                                        Canfight.Clear();
+                                        break;
+                                    }
+                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                                    {
+                                        break;
+                                    }
+                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                                    {
+                                        (int, int, Panel, Panel) b;
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        ls.Add(b);
+                                    }
+                            }
+                        }
+                        Canfight.Clear();
+                        lscount = ls.Count;
+                        sel = buf;
+                        while ((sel.Item1 <= 8 && sel.Item2 >= 0))
+                        {
+                            sel.Item1++;
+                            sel.Item2--;
+                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                            if (mbfight != null)
+                            {
+                                if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                                {
+                                    Canfight.Add(mbfight);
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                {
+                                    Canfight.Clear();
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                                {
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                                {
+                                    (int, int, Panel, Panel) b;
+                                    b.Item1 = sel.Item1;
+                                    b.Item2 = sel.Item2;
+                                    b.Item3 = item;
+                                    b.Item4 = Canfight[Canfight.Count - 1];
+                                    ls.Add(b);
+                                }
+                            }
                         }
                     }
-                    for (int i = 0; i < 4; i++)
+                    else
                     {
-                        if (Canfight[i] != null)
+
+                        for (int i = 1; i <= 2; i++)
                         {
-                            if (Canfight[i].BackgroundImage != item.BackgroundImage && Canfight[i].BackgroundImage != null)
+                            if (i == 1)
                             {
-                                if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage)
+                                Canfight.Add(RowAndCow.Where(t => t.Value == ((buf.Item1 - i), (buf.Item2 - i))).FirstOrDefault().Key);
+                                Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
+                                Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
+                                Canfight.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                            }
+                            else
+                            {
+
+                                Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 - i)).FirstOrDefault().Key);
+                                Steps.Add((buf.Item1 - i, buf.Item2 - i));
+                                Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
+                                Steps.Add((buf.Item1 - i, buf.Item2 + i));
+                                Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 - i)).FirstOrDefault().Key);
+                                Steps.Add((buf.Item1 + i, buf.Item2 - i));
+                                Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 + i, buf.Item2 + i)).FirstOrDefault().Key);
+                                Steps.Add((buf.Item1 + i, buf.Item2 + i));
+                            }
+                        }
+                        for (int i = 0; i < 4; i++)
+                        {
+                            if (Canfight[i] != null)
+                            {
+                                if (Canfight[i].BackgroundImage != item.BackgroundImage && Canfight[i].BackgroundImage != null && Canfight[i].BackgroundImage.Tag != item.BackgroundImage.Tag)
                                 {
-                                    //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
-                                    //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
-                                    //MessageBox.Show(item.BackgroundImage.Tag.ToString());
-                                    //MessageBox.Show("candef");
+                                    if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage )
+                                    {
+                                        //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
+                                        //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
+                                        //MessageBox.Show(item.BackgroundImage.Tag.ToString());
+                                        //MessageBox.Show("candef");
 
 
-                                }
-                                else
-                                {
-                                    //MessageBox.Show("can fight");
-                                    (int, int, Panel, Panel) b;
-                                    b.Item1 = Steps[i].Item1;
-                                    b.Item2 = Steps[i].Item2;
-                                    b.Item3 = item;
-                                    b.Item4 = Canfight[i];
-                                    ls.Add(b);
+                                    }
+                                    else
+                                    {
+                                        //MessageBox.Show("can fight");
+                                        if (Candef[i].BackgroundImage!=null)
+                                        {
+                                            if (Candef[i].BackgroundImage.Tag!=item.BackgroundImage.Tag|| Canfight[i].BackgroundImage.Tag!= Candef[i].BackgroundImage.Tag)
+                                            {
+                                                (int, int, Panel, Panel) b;
+                                                b.Item1 = Steps[i].Item1;
+                                                b.Item2 = Steps[i].Item2;
+                                                b.Item3 = item;
+                                                b.Item4 = Canfight[i];
+                                                ls.Add(b);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            (int, int, Panel, Panel) b;
+                                            b.Item1 = Steps[i].Item1;
+                                            b.Item2 = Steps[i].Item2;
+                                            b.Item3 = item;
+                                            b.Item4 = Canfight[i];
+                                            ls.Add(b);
+                                        }
+                                        
+                                    }
                                 }
                             }
                         }
