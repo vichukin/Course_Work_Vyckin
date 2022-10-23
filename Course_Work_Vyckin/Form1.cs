@@ -21,6 +21,7 @@ namespace Course_Work_Vyckin
             Letters.Add(8, "H");
         }
         Dictionary<int,string> Letters = new Dictionary<int,string>();
+        bool White = true;
 
         Bitmap black;
         Bitmap white;
@@ -31,10 +32,14 @@ namespace Course_Work_Vyckin
         {
             tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
             tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-
+            //tableLayoutPanel1.Paint += TableLayoutPanel1_Paint;
 
             GetLetters();
-            int counter = 0;
+            int counter;
+            if (White)
+                counter = 0;
+            else 
+                counter = 1;
             //Label lb = new Label();
             //lb.Text = "HUJ";
             //tableLayoutPanel1.Controls.Add(lb);
@@ -79,7 +84,10 @@ namespace Course_Work_Vyckin
                     else if(j==0 || j == 9)
                     {
                         Label l = new Label();
-                        l.Text = (9-i).ToString();
+                        if (White)
+                            l.Text = (9 - i).ToString();
+                        else
+                            l.Text = i.ToString();
                         l.Margin = new Padding(0);
                         l.Size = new Size(70,70);
                         //l.BorderStyle = BorderStyle.FixedSingle;
@@ -100,6 +108,7 @@ namespace Course_Work_Vyckin
                         P.Margin = new Padding(0);
                         P.BackgroundImageLayout = ImageLayout.None;
                         tableLayoutPanel1.Controls.Add(P, j, i);
+
                         P.BackColor = Color.BlanchedAlmond;
                     }
                     else if (counter % 2 == 1)
@@ -121,10 +130,18 @@ namespace Course_Work_Vyckin
                     counter -= 7;
             }
             GetDesk();
+            
+        }
+
+        private void TableLayoutPanel1_Paint(object? sender, PaintEventArgs e)
+        {
+            Panel p = sender as Panel;
+            e.Graphics.FillEllipse(Brushes.Blue, p.Location.X, p.Location.Y, 20, 20);
         }
 
         void GetDesk()
         {
+            
             Image img = Image.FromFile("Figures/chern.png");
             black = new Bitmap(img, playing_fields.First().Size);
             img.Dispose();
@@ -140,15 +157,34 @@ namespace Course_Work_Vyckin
                 //pictureBox.Image = new Bitmap(img, p.Size);
                 //img.Dispose();
                 //p.Controls.Add(pictureBox);
-                p.BackgroundImage = black;
-                p.BackgroundImage.Tag = "Black";
+                if (White)
+                {
+                    p.BackgroundImage = black;
+                    p.BackgroundImage.Tag = "Black";
+                }
+                else
+                {
+                    
+                    p.BackgroundImage = white;
+                    p.BackgroundImage.Tag = "white";
+                }
 
             }
             for (int i = playing_fields.Count - 1; i > playing_fields.Count - 1 - 12; i--)
             {
                 Panel p = playing_fields[i];
-                p.BackgroundImage = white;
-                p.BackgroundImage.Tag = "white";
+                if (White)
+                {
+                    p.BackgroundImage = white;
+                    p.BackgroundImage.Tag = "white";
+                }
+                else
+                {
+                    p.BackgroundImage = black;
+                    p.BackgroundImage.Tag = "Black";
+                }
+                
+                
                 Forward.Add(p);
                 //img.Dispose();
 
@@ -269,6 +305,7 @@ namespace Course_Work_Vyckin
                     {
                         IsSelectedFigure = true;
                         SelectedFigure = p;
+                        p.Invalidate();
                     }
                 }
             }
@@ -411,11 +448,6 @@ namespace Course_Work_Vyckin
                 }
             }
             return ls;
-        }
-
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }
