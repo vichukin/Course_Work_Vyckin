@@ -9,6 +9,19 @@ namespace Course_Work_Vyckin
 
 
         }
+        void GetLetters()
+        {
+            Letters.Add(1, "A");
+            Letters.Add(2, "B");
+            Letters.Add(3, "C");
+            Letters.Add(4, "D");
+            Letters.Add(5, "E");
+            Letters.Add(6, "F");
+            Letters.Add(7, "G");
+            Letters.Add(8, "H");
+        }
+        Dictionary<int,string> Letters = new Dictionary<int,string>();
+
         Bitmap black;
         Bitmap white;
         Dictionary<Panel, (int, int)> RowAndCow = new Dictionary<Panel, (int, int)>();
@@ -16,32 +29,96 @@ namespace Course_Work_Vyckin
         List<Panel> Forward = new List<Panel>();
         private void Form1_Load(object sender, EventArgs e)
         {
+            tableLayoutPanel1.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+            tableLayoutPanel1.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+
+
+            GetLetters();
             int counter = 0;
-            for (int i = 0; i < 8; i++)
+            //Label lb = new Label();
+            //lb.Text = "HUJ";
+            //tableLayoutPanel1.Controls.Add(lb);
+            //tableLayoutPanel1.SetRow(lb, 0);
+            //tableLayoutPanel1.SetColumn(lb, 3);
+            for (int i = 0; i < 10; i++)
             {
-                for (int j = 0; j < 8; j++)
+                for (int j = 0; j < 10; j++)
                 {
-                    Panel P = new Panel();
 
-                    P.Margin = new Padding(0);
-                    P.BackgroundImageLayout = ImageLayout.None;
-                    tableLayoutPanel1.Controls.Add(P, j, i);
-                    if (counter % 2 == 0)
+
+                    if ((i == 0 && j == 0) || (i == 9 && j == 9)||(i==0&&j==9)||(i==9&&j==0))
                     {
-                        P.BackColor = Color.NavajoWhite;
-
+                        //Label l = new Label();
+                        ////l.Text = Letters[j];
+                        //l.Size = new Size(70, 70);
+                        //tableLayoutPanel1.Controls.Add(l);
+                        //tableLayoutPanel1.SetRow(l, i);
+                        //tableLayoutPanel1.SetColumn(l, j - 1);
                     }
-                    else
+                    else if(i == 0||i==9)
+                    {
+                        Label l = new Label();
+                        l.Text = Letters[j];
+                        l.Size = new Size(70, 70);
+                        //l.BackColor= Color.BlanchedAlmond;
+                        l.Margin = new Padding(0,0,0,0);
+                        
+                        //Font f = new Font("Segoe", 10, FontStyle.Bold);
+                        l.Font = new Font("Segoe", 15, FontStyle.Bold);
+                        if (i == 0)
+                            l.TextAlign = ContentAlignment.BottomCenter;
+                        else
+                            l.TextAlign = ContentAlignment.TopCenter;
+                        tableLayoutPanel1.Controls.Add(l);
+                        tableLayoutPanel1.SetRow(l, i);
+                        tableLayoutPanel1.SetColumn(l, j );
+                        //tableLayoutPanel1.SetCellPosition(l, new TableLayoutPanelCellPosition(j, i));
+                        //this.Text = tableLayoutPanel1.GetCellPosition(l).ToString();
+                        //this.Text= tableLayoutPanel1.ColumnCount.ToString();
+                    }
+                    else if(j==0 || j == 9)
+                    {
+                        Label l = new Label();
+                        l.Text = (9-i).ToString();
+                        l.Margin = new Padding(0);
+                        l.Size = new Size(70,70);
+                        //l.BorderStyle = BorderStyle.FixedSingle;
+                        //Font f = new Font("Segoe", 10, FontStyle.Bold);
+                        l.Font = new Font("Segoe", 15, FontStyle.Bold);
+                        if (j == 0)
+                            l.TextAlign = ContentAlignment.MiddleRight;
+                        else
+                            l.TextAlign = ContentAlignment.MiddleLeft;
+                        tableLayoutPanel1.Controls.Add(l);
+                        tableLayoutPanel1.SetRow(l, i);
+                        tableLayoutPanel1.SetColumn(l, j);
+                    }
+                    else if (counter % 2 == 0)
+                    {
+                        Panel P = new Panel();
+
+                        P.Margin = new Padding(0);
+                        P.BackgroundImageLayout = ImageLayout.None;
+                        tableLayoutPanel1.Controls.Add(P, j, i);
+                        P.BackColor = Color.BlanchedAlmond;
+                    }
+                    else if (counter % 2 == 1)
                     {
 
+                        Panel P = new Panel();
+
+                        P.Margin = new Padding(0);
+                        P.BackgroundImageLayout = ImageLayout.None;
+                        tableLayoutPanel1.Controls.Add(P, j, i);
                         P.BackColor = Color.SandyBrown;
                         P.Click += P_Click;
                         playing_fields.Add(P);
                         RowAndCow.Add(P, (j, i));
+
                     }
                     counter++;
                 }
-                counter -= 7;
+                    counter -= 7;
             }
             GetDesk();
         }
@@ -101,7 +178,7 @@ namespace Course_Work_Vyckin
                             FightFigures(p, SelectedFigure);
                             Forward.Remove(SelectedFigure);
                             Forward.Add(p);
-                            
+
                             //c.Item1 = item.Item1 - b.Item1;
                             //c.Item2 = item.Item2 - b.Item2;
                             //Panel P = RowAndCow.Where(t => t.Value.Item1 == item.Item1 - c.Item1 + 1 && t.Value.Item2 == item.Item2 - c.Item2 + 1).First().Key;
@@ -118,7 +195,7 @@ namespace Course_Work_Vyckin
                             else
                             {
                                 IsSelectedFigure = false;
-                            SelectedFigure = null;
+                                SelectedFigure = null;
                             }
                         }
                     }
@@ -229,7 +306,7 @@ namespace Course_Work_Vyckin
                 }
                 else
                 {
-                    
+
                     Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 - i)).FirstOrDefault().Key);
                     Steps.Add((buf.Item1 - i, buf.Item2 - i));
                     Candef.Add(RowAndCow.Where(t => t.Value == (buf.Item1 - i, buf.Item2 + i)).FirstOrDefault().Key);
@@ -334,6 +411,11 @@ namespace Course_Work_Vyckin
                 }
             }
             return ls;
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
