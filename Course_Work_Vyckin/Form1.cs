@@ -1,4 +1,10 @@
 using System.Drawing;
+using System.Net.Sockets;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
 namespace Course_Work_Vyckin
 {
     public partial class Form1 : Form
@@ -37,6 +43,11 @@ namespace Course_Work_Vyckin
             //tableLayoutPanel1.Paint += TableLayoutPanel1_Paint;
 
             GetLetters();
+           
+
+        }
+        void GetTable()
+        {
             int counter;
             if (White)
                 counter = 0;
@@ -132,9 +143,7 @@ namespace Course_Work_Vyckin
                 counter -= 7;
             }
             GetDesk();
-
         }
-
         private void TableLayoutPanel1_Paint(object? sender, PaintEventArgs e)
         {
             Panel p = sender as Panel;
@@ -1101,6 +1110,76 @@ namespace Course_Work_Vyckin
            
             Rectangle r = new Rectangle(750, 200, 50, 50);
             e.Graphics.FillEllipse(Brushes.AntiqueWhite, r);
+        }
+        IPEndPoint ServerIP = new IPEndPoint(IPAddress.Parse("192.168.0.26"), 1024);
+        Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.IP);
+        string GetLocalIP()
+        {
+            using (Socket socket1 = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+            {
+                socket1.Connect("8.8.8.8", 65530);
+                IPEndPoint endPoint = socket1.LocalEndPoint as IPEndPoint;
+                return endPoint.Address.ToString();
+            }
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Random rnd = new Random();
+            int port = rnd.Next(10000, 64000);
+            IPEndPoint end = new IPEndPoint(IPAddress.Parse(GetLocalIP()), port);
+            socket.Bind(end);
+            Task task = Task.Run(() => ListenerFunc(socket));
+            Task task1 = Task.Run(() => SendToServ("Ready"));
+            button1.Enabled = false;
+
+        }
+        async void SendToServ(string text)
+        {
+            byte[] buf = new byte[1024];
+            buf = Encoding.Default.GetBytes(text);
+            await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+
+        }
+        async void SendToServ(List<StepInfo> ls)
+        {
+            byte[] buf = new byte[1024];
+            string text = JsonSerializer.Serialize<List<StepInfo>>(ls);
+            buf = Encoding.Default.GetBytes(text);
+            await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+        }
+        async void ListenerFunc(Socket socket)
+        {
+
+            try
+            {
+                do
+                {
+                    byte[] buf = new byte[1024];
+
+                    SocketReceiveFromResult res = await socket.ReceiveFromAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+                    string text = Encoding.Default.GetString(buf, 0, res.ReceivedBytes);
+                    if(text == "Black")
+                    {
+                        White = false;
+                        MessageBox.Show("Black");
+                    }
+                    else
+                    {
+                        White = true;
+                        MessageBox.Show("White");
+                    }
+                } while (true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                throw;
+            }
+            finally
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+            }
         }
     }
 }
