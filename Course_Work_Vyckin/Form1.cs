@@ -1,4 +1,4 @@
-
+using System.Drawing;
 namespace Course_Work_Vyckin
 {
     public partial class Form1 : Form
@@ -6,8 +6,7 @@ namespace Course_Work_Vyckin
         public Form1()
         {
             InitializeComponent();
-
-
+            trydraw();
         }
         void GetLetters()
         {
@@ -301,6 +300,7 @@ namespace Course_Work_Vyckin
                             {
                                 List<(int, int)> Steps = new List<(int, int)>();
                                 Steps = CheckForQueen(SelectedFigure);
+
                                 if (Steps.Contains(buf))
                                 {
                                     SwapFigures(p, SelectedFigure);
@@ -369,11 +369,34 @@ namespace Course_Work_Vyckin
                         IsSelectedFigure = true;
                         SelectedFigure = p;
                         //p.Invalidate();
+                        //if (Queens.Contains(SelectedFigure))
+                        //{
+                        //    List<(int, int)> Steps = CheckForQueen(SelectedFigure);
+                        //    DrawElipses(Steps);
+                        //}
                     }
                 }
             }
             FightSteps = null;
             FightSteps = MandatoryFight();
+            
+        }
+        void trydraw()
+        {
+            Graphics g = this.CreateGraphics();
+            Rectangle r = new Rectangle(750, 200, 50, 50);
+            g.FillEllipse(Brushes.AntiqueWhite, r);
+            g.Dispose();
+        }
+        void DrawElipses(List<(int,int)> steps)
+        {
+            foreach(var step in steps)
+            {
+                Panel thispanel = RowAndCow.Where(t => t.Value == step).FirstOrDefault().Key;
+                Graphics g = tableLayoutPanel1.CreateGraphics();
+                Rectangle r = new Rectangle(thispanel.Location.X+thispanel.Width/2-1,thispanel.Location.Y-thispanel.Height/2-1,50,50);
+                g.DrawEllipse(Pens.Aquamarine, r);
+            }
         }
         void FightFigures(Panel p, Panel sel)
         {
@@ -387,6 +410,92 @@ namespace Course_Work_Vyckin
             SelectedFigure.BackgroundImage = null;
             IsSelectedFigure = false;
             SelectedFigure = null;
+        }
+        bool CheckForDoubleFight(Panel queen, Panel killed)
+        {
+            (int, int) buf = RowAndCow[queen];
+            List<(int, int)> Steps = new List<(int, int)>();
+            (int, int) sel = buf;
+            List<Panel> Canfight = new List<Panel>();
+            while ((sel.Item1 >= 0 && sel.Item2 >= 0))
+            {
+                sel.Item1--;
+                sel.Item2--;
+                Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                if (mbfight != null)
+                {
+                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != queen.BackgroundImage.Tag && mbfight != killed)
+                    {
+                        Canfight.Add(mbfight);
+
+                    }
+                    else if(Canfight.Count>0&& mbfight.BackgroundImage==null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            Canfight.Clear();
+            sel = buf;
+            while ((sel.Item1 <= 8 && sel.Item2 <= 8))
+            {
+                sel.Item1++;
+                sel.Item2++;
+                Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                if (mbfight != null)
+                {
+                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != queen.BackgroundImage.Tag && mbfight != killed)
+                    {
+                        Canfight.Add(mbfight);
+
+                    }
+                    else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            Canfight.Clear();
+            sel = buf;
+            while ((sel.Item1 >= 0 && sel.Item2 <= 8))
+            {
+                sel.Item1--;
+                sel.Item2++;
+                Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                if (mbfight != null)
+                {
+                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != queen.BackgroundImage.Tag && mbfight != killed)
+                    {
+                        Canfight.Add(mbfight);
+
+                    }
+                    else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            Canfight.Clear();
+            sel = buf;
+            while ((sel.Item1 <= 8 && sel.Item2 >= 0))
+            {
+                sel.Item1++;
+                sel.Item2--;
+                Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                if (mbfight != null)
+                {
+                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != queen.BackgroundImage.Tag && mbfight != killed)
+                    {
+                        Canfight.Add(mbfight);
+
+                    }
+                    else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         List<(int, int)> CheckForQueen(Panel P)
         {
@@ -662,7 +771,7 @@ namespace Course_Work_Vyckin
                     {
                         if (Canfight[i].BackgroundImage != P.BackgroundImage && Canfight[i].BackgroundImage != null)
                         {
-                            if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || P.BackgroundImage == Candef[i].BackgroundImage  )
+                            if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || P.BackgroundImage == Candef[i].BackgroundImage)
                             {
                                 //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
                                 //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
@@ -693,7 +802,7 @@ namespace Course_Work_Vyckin
                                     b.Item3 = P;
                                     ls.Add(b);
                                 }
-                                
+
                             }
                         }
                     }
@@ -704,7 +813,7 @@ namespace Course_Work_Vyckin
         List<(int, int, Panel, Panel)> MandatoryFight()
         {
             List<(int, int, Panel, Panel)> ls = new List<(int, int, Panel, Panel)>();
-
+            List<(int, int, Panel, Panel)> doublefight = new List<(int, int, Panel, Panel)>();
             foreach (var item in Forward)
             {
                 if (item.BackgroundImage != null)
@@ -725,7 +834,7 @@ namespace Course_Work_Vyckin
                             Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
                             if (mbfight != null)
                             {
-                                if (mbfight.BackgroundImage!=null&& mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
+                                if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count == 0)
                                 {
                                     Canfight.Add(mbfight);
                                 }
@@ -741,18 +850,33 @@ namespace Course_Work_Vyckin
                                 else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
                                 {
                                     (int, int, Panel, Panel) b;
-                                    b.Item1 = sel.Item1;
-                                    b.Item2 = sel.Item2;
-                                    b.Item3 = item;
-                                    b.Item4 = Canfight[Canfight.Count - 1];
-                                    ls.Add(b);
+                                    var bufimg = mbfight.BackgroundImage;
+                                    mbfight.BackgroundImage = item.BackgroundImage;
+                                    if (CheckForDoubleFight(mbfight, Canfight[Canfight.Count - 1]))
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        doublefight.Add(b);
+                                    }
+                                    else
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        ls.Add(b);
+                                    }
+                                    mbfight.BackgroundImage = bufimg;
+
                                 }
                             }
                         }
                         sel = buf;
                         Canfight.Clear();
                         lscount = ls.Count;
-                        while ((sel.Item1 <=8 && sel.Item2 <=8))
+                        while ((sel.Item1 <= 8 && sel.Item2 <= 8))
                         {
                             sel.Item1++;
                             sel.Item2++;
@@ -775,46 +899,74 @@ namespace Course_Work_Vyckin
                                 else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
                                 {
                                     (int, int, Panel, Panel) b;
-                                    b.Item1 = sel.Item1;
-                                    b.Item2 = sel.Item2;
-                                    b.Item3 = item;
-                                    b.Item4 = Canfight[Canfight.Count - 1];
-                                    ls.Add(b);
-                                }
-                            }
-                        }
-                        Canfight.Clear();
-                        lscount = ls.Count;
-                        sel = buf;
-                        while ((sel.Item1 >=0 && sel.Item2 <= 8))
-                        {
-                            sel.Item1--;
-                            sel.Item2++;
-                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
-                            if (mbfight != null)
-                            {
-                                    if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count() == 0)
+                                    var bufimg = mbfight.BackgroundImage;
+                                    mbfight.BackgroundImage = item.BackgroundImage;
+                                    if (CheckForDoubleFight(mbfight, Canfight[Canfight.Count - 1]))
                                     {
-                                        Canfight.Add(mbfight);
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        doublefight.Add(b);
                                     }
-                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                    else
                                     {
-                                        Canfight.Clear();
-                                        break;
-                                    }
-                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
-                                    {
-                                        break;
-                                    }
-                                    else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
-                                    {
-                                        (int, int, Panel, Panel) b;
                                         b.Item1 = sel.Item1;
                                         b.Item2 = sel.Item2;
                                         b.Item3 = item;
                                         b.Item4 = Canfight[Canfight.Count - 1];
                                         ls.Add(b);
                                     }
+                                    mbfight.BackgroundImage = bufimg;
+                                }
+                            }
+                        }
+                        Canfight.Clear();
+                        lscount = ls.Count;
+                        sel = buf;
+                        while ((sel.Item1 >= 0 && sel.Item2 <= 8))
+                        {
+                            sel.Item1--;
+                            sel.Item2++;
+                            Panel mbfight = RowAndCow.Where(t => t.Value == (sel.Item1, sel.Item2)).FirstOrDefault().Key;
+                            if (mbfight != null)
+                            {
+                                if (mbfight.BackgroundImage != null && mbfight.BackgroundImage.Tag != item.BackgroundImage.Tag && Canfight.Count() == 0)
+                                {
+                                    Canfight.Add(mbfight);
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count == lscount)
+                                {
+                                    Canfight.Clear();
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage != null && ls.Count > lscount)
+                                {
+                                    break;
+                                }
+                                else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
+                                {
+                                    (int, int, Panel, Panel) b;
+                                    var bufimg = mbfight.BackgroundImage;
+                                    mbfight.BackgroundImage = item.BackgroundImage;
+                                    if (CheckForDoubleFight(mbfight, Canfight[Canfight.Count - 1]))
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        doublefight.Add(b);
+                                    }
+                                    else
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        ls.Add(b);
+                                    }
+                                    mbfight.BackgroundImage = bufimg;
+                                }
                             }
                         }
                         Canfight.Clear();
@@ -843,11 +995,25 @@ namespace Course_Work_Vyckin
                                 else if (Canfight.Count > 0 && mbfight.BackgroundImage == null)
                                 {
                                     (int, int, Panel, Panel) b;
-                                    b.Item1 = sel.Item1;
-                                    b.Item2 = sel.Item2;
-                                    b.Item3 = item;
-                                    b.Item4 = Canfight[Canfight.Count - 1];
-                                    ls.Add(b);
+                                    var bufimg = mbfight.BackgroundImage;
+                                    mbfight.BackgroundImage = item.BackgroundImage;
+                                    if (CheckForDoubleFight(mbfight, Canfight[Canfight.Count - 1]))
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        doublefight.Add(b);
+                                    }
+                                    else
+                                    {
+                                        b.Item1 = sel.Item1;
+                                        b.Item2 = sel.Item2;
+                                        b.Item3 = item;
+                                        b.Item4 = Canfight[Canfight.Count - 1];
+                                        ls.Add(b);
+                                    }
+                                    mbfight.BackgroundImage = bufimg;
                                 }
                             }
                         }
@@ -883,7 +1049,7 @@ namespace Course_Work_Vyckin
                             {
                                 if (Canfight[i].BackgroundImage != item.BackgroundImage && Canfight[i].BackgroundImage != null && Canfight[i].BackgroundImage.Tag != item.BackgroundImage.Tag)
                                 {
-                                    if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage )
+                                    if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage)
                                     {
                                         //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
                                         //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
@@ -895,9 +1061,9 @@ namespace Course_Work_Vyckin
                                     else
                                     {
                                         //MessageBox.Show("can fight");
-                                        if (Candef[i].BackgroundImage!=null)
+                                        if (Candef[i].BackgroundImage != null)
                                         {
-                                            if (Candef[i].BackgroundImage.Tag!=item.BackgroundImage.Tag|| Canfight[i].BackgroundImage.Tag!= Candef[i].BackgroundImage.Tag)
+                                            if (Candef[i].BackgroundImage.Tag != item.BackgroundImage.Tag || Canfight[i].BackgroundImage.Tag != Candef[i].BackgroundImage.Tag)
                                             {
                                                 (int, int, Panel, Panel) b;
                                                 b.Item1 = Steps[i].Item1;
@@ -916,7 +1082,7 @@ namespace Course_Work_Vyckin
                                             b.Item4 = Canfight[i];
                                             ls.Add(b);
                                         }
-                                        
+
                                     }
                                 }
                             }
@@ -924,7 +1090,17 @@ namespace Course_Work_Vyckin
                     }
                 }
             }
-            return ls;
+            if (doublefight.Count > 0)
+                return doublefight;
+            else
+                return ls;
+        }
+
+        private void Form1_Paint(object sender, PaintEventArgs e)
+        {
+           
+            Rectangle r = new Rectangle(750, 200, 50, 50);
+            e.Graphics.FillEllipse(Brushes.AntiqueWhite, r);
         }
     }
 }
