@@ -1233,7 +1233,7 @@ namespace Course_Work_Vyckin
                         List<StepInfo> info = JsonConvert.DeserializeObject<List<StepInfo>>(text);
                         TranslateStep(info);
                         FightSteps= MandatoryFight();
-                        Thread.Sleep(1000);
+                        Thread.Sleep(1500);
                         if (this.InvokeRequired)
                         {
                             this.Invoke((MethodInvoker)(() =>
