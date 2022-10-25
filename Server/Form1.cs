@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Net.Http.Json;
+using Newtonsoft.Json;
+
 namespace Server
 {
   
@@ -96,7 +99,8 @@ namespace Server
                     }
                     else
                     {
-                        List<StepInfo> st = JsonSerializer.Deserialize<List<StepInfo>>(text);
+                        List<StepInfo> st = JsonConvert.DeserializeObject<List<StepInfo>>(text);
+                        //MessageBox.Show(text);
                         int counter = 0;
                         foreach(var item in st)
                             if(item.Fight!=(50,50))
@@ -105,12 +109,12 @@ namespace Server
                             StepsWithOutFight++;
                         else
                             StepsWithOutFight = 0;
-                        if(White == res.RemoteEndPoint)
+                        if(White.ToString() == res.RemoteEndPoint.ToString())
                         {
                             BlackFigures -= counter;
                             await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, Black);
                         }
-                        else if(Black ==res.RemoteEndPoint)
+                        else if(Black.ToString() == res.RemoteEndPoint.ToString())
                         {
                             WhiteFigures -= counter;
                             await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, White);
