@@ -218,10 +218,10 @@ namespace Course_Work_Vyckin
             }
             if (White)
             {
-                tableLayoutPanel1.Enabled = true;
+                SwitchEnabledTableLayoutPanel(true);
             }
             else
-                tableLayoutPanel1.Enabled = false;
+                SwitchEnabledTableLayoutPanel(false);
         }
         List<(int, int, Panel, Panel)> FightSteps = new List<(int, int, Panel, Panel)>();
         bool IsSelectedFigure;
@@ -287,7 +287,7 @@ namespace Course_Work_Vyckin
                             {
                                 IsSelectedFigure = false;
                                 SelectedFigure = null;
-                                tableLayoutPanel1.Enabled = false;
+                                SwitchEnabledTableLayoutPanel(false);
                                 SendToServ(StepInfos);
                                 StepInfos.Clear();
                             }
@@ -348,7 +348,7 @@ namespace Course_Work_Vyckin
                                     SelectedFigure = null;
                                     IsSelectedFigure = false;
                                 }
-                                tableLayoutPanel1.Enabled = false;
+                                SwitchEnabledTableLayoutPanel(false);
                                 SendToServ(StepInfos);
                                 StepInfos.Clear();
                             }
@@ -377,7 +377,7 @@ namespace Course_Work_Vyckin
                                         }
                                     }
                                     //FightSteps = MandatoryFight();
-                                    tableLayoutPanel1.Enabled = false;
+                                    SwitchEnabledTableLayoutPanel(false);
                                     SendToServ(StepInfos);
                                     StepInfos.Clear();
                                 }
@@ -1232,7 +1232,19 @@ namespace Course_Work_Vyckin
                     {
                         List<StepInfo> info = JsonConvert.DeserializeObject<List<StepInfo>>(text);
                         TranslateStep(info);
-                        tableLayoutPanel1.Enabled = true;
+                        if (this.InvokeRequired)
+                        {
+                            this.Invoke((MethodInvoker)(() =>
+                            {
+                                SwitchEnabledTableLayoutPanel(true);
+
+                            }
+                            ));
+                        }
+                        else
+                        {
+                            SwitchEnabledTableLayoutPanel(true);
+                        }
                     }
 
 
@@ -1287,6 +1299,10 @@ namespace Course_Work_Vyckin
         {
             MyIp = IPAddress.Parse(GetLocalIP());
             button2.Enabled = false;
+        }
+        void SwitchEnabledTableLayoutPanel(bool b)
+        {
+            tableLayoutPanel1.Enabled = b;
         }
     }
 
