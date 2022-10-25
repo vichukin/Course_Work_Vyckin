@@ -80,7 +80,13 @@ namespace Server
                                 }
                             }
                             if (White != null && Black != null)
+                            {
                                 Game = true;
+                                buf = Encoding.Default.GetBytes("Start Game");
+                                await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, Black);
+                                buf = Encoding.Default.GetBytes("Start Game");
+                                await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, White);
+                            }
                         }
                         else
                         {

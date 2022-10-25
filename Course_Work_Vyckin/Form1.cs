@@ -1163,10 +1163,14 @@ namespace Course_Work_Vyckin
                         White = false;
                         MessageBox.Show("Black");
                     }
-                    else
+                    else if(text == "White")
                     {
                         White = true;
                         MessageBox.Show("White");
+                    }
+                    else
+                    {
+                        MessageBox.Show($"{text}");
                     }
                 } while (true);
             }
