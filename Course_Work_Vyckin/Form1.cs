@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Diagnostics.Eventing.Reader;
 using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace Course_Work_Vyckin
 {
@@ -29,7 +30,7 @@ namespace Course_Work_Vyckin
         }
         Dictionary<int, string> Letters = new Dictionary<int, string>();
         bool White = true;
-
+        int EnemyFigures;
         Bitmap black;
         Bitmap white;
         Bitmap queenwhite;
@@ -153,6 +154,17 @@ namespace Course_Work_Vyckin
                 counter -= 7;
             }
             GetDesk();
+            EnemyFigures = 12;
+            if (White)
+            {
+                ChangeLabelText(6, Forward.Count.ToString());
+                ChangeLabelText(7, EnemyFigures.ToString());
+            }
+            else
+            {
+                ChangeLabelText(7, Forward.Count.ToString());
+                ChangeLabelText(6, EnemyFigures.ToString());
+            }
         }
         private void TableLayoutPanel1_Paint(object? sender, PaintEventArgs e)
         {
@@ -244,11 +256,22 @@ namespace Course_Work_Vyckin
                         b.Item2 = item.Item2;
                         if (b == RowAndCow[p])
                         {
-                            StepInfo inf = new StepInfo() { From = RowAndCow[SelectedFigure], To = b, Fight = RowAndCow[item.Item4] };
+                            var c = RowAndCow[SelectedFigure];
+                            var c1 = RowAndCow[item.Item4];
+                            StepInfo inf = new StepInfo() { From = new MyTuple(c.Item1, c.Item2), To = new MyTuple(b.Item1, b.Item2), Fight = new MyTuple(c1.Item1, c1.Item2) };
                             StepInfos.Add(inf);
                             FightFigures(p, SelectedFigure);
                             Forward.Remove(SelectedFigure);
                             Forward.Add(p);
+                            EnemyFigures--;
+                            if (White)
+                            {
+                                ChangeLabelText(7, EnemyFigures.ToString());
+                            }
+                            else
+                            {
+                                ChangeLabelText(6, EnemyFigures.ToString());
+                            }
                             if (Queens.Contains(SelectedFigure))
                             {
                                 Queens.Remove(SelectedFigure);
@@ -290,6 +313,7 @@ namespace Course_Work_Vyckin
                                 SwitchEnabledTableLayoutPanel(false);
                                 SendToServ(StepInfos);
                                 StepInfos.Clear();
+
                             }
                         }
                     }
@@ -335,10 +359,12 @@ namespace Course_Work_Vyckin
 
                                 if (Steps.Contains(buf))
                                 {
-                                    StepInfo info = new StepInfo() { From = RowAndCow[SelectedFigure], To = RowAndCow[p] };
+                                    var sel = RowAndCow[SelectedFigure];
+                                    var to = RowAndCow[p];
+
+                                    StepInfo info = new StepInfo() { From = new MyTuple(sel.Item1, sel.Item2), To = new MyTuple(to.Item1, to.Item2) };
                                     StepInfos.Add(info);
                                     SwapFigures(p, SelectedFigure);
-                                    Forward.Remove(SelectedFigure);
                                     Forward.Add(p);
                                     Queens.Remove(SelectedFigure);
                                     Queens.Add(p);
@@ -356,12 +382,14 @@ namespace Course_Work_Vyckin
                             {
                                 if ((buf.Item1 == selected.Item1 - 1 && buf.Item2 == selected.Item2 - 1) || (buf.Item1 == selected.Item1 + 1 && buf.Item2 == selected.Item2 - 1))
                                 {
-                                    StepInfo info = new StepInfo() { From = RowAndCow[SelectedFigure], To = RowAndCow[p] };
+                                    var sel = RowAndCow[SelectedFigure];
+                                    var to = RowAndCow[p];
+
+                                    StepInfo info = new StepInfo() { From = new MyTuple(sel.Item1, sel.Item2), To = new MyTuple(to.Item1, to.Item2) };
                                     StepInfos.Add(info);
                                     SwapFigures(p, SelectedFigure);
-                                    Forward.Remove(SelectedFigure);
                                     Forward.Add(p);
-                                    this.Text = $"{buf.Item1} - {buf.Item2}";
+                                    //this.Text = $"{buf.Item1} - {buf.Item2}";
                                     if (buf.Item2 == 1)
                                     {
                                         Queens.Add(p);
@@ -452,6 +480,7 @@ namespace Course_Work_Vyckin
             p.BackgroundImage = SelectedFigure.BackgroundImage;
             SelectedFigure.BackgroundImage = null;
             IsSelectedFigure = false;
+            Forward.Remove(SelectedFigure);
             SelectedFigure = null;
         }
         bool CheckForDoubleFight(Panel queen, Panel killed)
@@ -1160,14 +1189,16 @@ namespace Course_Work_Vyckin
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            Random rnd = new Random();
-            int port = rnd.Next(10000, 64000);
-            //IPEndPoint end = new IPEndPoint(IPAddress.Parse(GetLocalIP()), port);
-            IPEndPoint end = new IPEndPoint(MyIp, port);
-            socket.Bind(end);
-            Task task = Task.Run(() => ListenerFunc(socket));
-            Task task1 = Task.Run(() => SendToServ("Ready"));
-            button1.Enabled = false;
+            //Random rnd = new Random();
+            //int port = rnd.Next(10000, 64000);
+            ////IPEndPoint end = new IPEndPoint(IPAddress.Parse(GetLocalIP()), port);
+            //IPEndPoint end = new IPEndPoint(MyIp, port);
+            //socket.Bind(end);
+            //Task task = Task.Run(() => ListenerFunc(socket));
+
+            ClientStart();
+
+            button4.Enabled = false;
 
         }
 
@@ -1175,18 +1206,43 @@ namespace Course_Work_Vyckin
         {
             byte[] buf = new byte[1024];
             buf = Encoding.Default.GetBytes(text);
-            await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+            var stream = tcpClient.GetStream();
+            stream.Write(buf);
+
+            //stream.Dispose();
+            //await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
 
         }
         async void SendToServ(List<StepInfo> ls)
         {
             byte[] buf = new byte[1024];
             //string text = JsonSerializer.Serialize(ls);
-            string text = JsonConvert.SerializeObject(ls,Formatting.Indented);
-            //MessageBox.Show(text);
+            string text = JsonConvert.SerializeObject(ls);
+            //string text = "Huj\r\n Pizda\r\n Zalupa";
+            //MessageBox.Show($"{text} \r\n {buf.Length}");
             buf = Encoding.Default.GetBytes(text);
-            await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+            //MessageBox.Show($"{text} \r\n Length - {buf.Length}");
+            //string text2 = Encoding.Default.GetString(buf);
+            //MessageBox.Show(text2);
+            //await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
+            var stream = tcpClient.GetStream();
+            await stream.WriteAsync(buf, 0, buf.Length);
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    ChangeFormText(Forward.Count.ToString());
+
+                }
+                ));
+            }
+            else
+            {
+                ChangeFormText(Forward.Count.ToString());
+
+            }
         }
+
         async void ListenerFunc(Socket socket)
         {
 
@@ -1230,23 +1286,44 @@ namespace Course_Work_Vyckin
                         MessageBox.Show("Error, try next time");
                     else
                     {
-                        List<StepInfo> info = JsonConvert.DeserializeObject<List<StepInfo>>(text);
-                        TranslateStep(info);
-                        FightSteps= MandatoryFight();
-                        Thread.Sleep(1500);
-                        if (this.InvokeRequired)
+                        try
                         {
-                            this.Invoke((MethodInvoker)(() =>
+                            
+                            List<StepInfo> info = JsonConvert.DeserializeObject<List<StepInfo>>(text);
+
+                            TranslateStep(info);
+                            FightSteps = MandatoryFight();
+                            //Thread.Sleep(1500);
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke((MethodInvoker)(() =>
+                                {
+                                    SwitchEnabledTableLayoutPanel(true);
+                                    if (White)
+                                    {
+                                        ChangeLabelText(6, Forward.Count.ToString());
+                                    }
+                                    else
+                                    {
+                                        ChangeLabelText(7, Forward.Count.ToString());
+                                    }
+                                }
+                                ));
+                            }
+                            else
                             {
                                 SwitchEnabledTableLayoutPanel(true);
-
+                                if (White)
+                                {
+                                    ChangeLabelText(6, Forward.Count.ToString());
+                                }
+                                else
+                                {
+                                    ChangeLabelText(7, Forward.Count.ToString());
+                                }
                             }
-                            ));
                         }
-                        else
-                        {
-                            SwitchEnabledTableLayoutPanel(true);
-                        }
+                        catch { }
                     }
 
 
@@ -1278,21 +1355,54 @@ namespace Course_Work_Vyckin
                 //sb.AppendLine(item.To.ToString());
                 //sb.AppendLine(item.Fight.ToString());
                 //MessageBox.Show(sb.ToString());
-                Panel from = RowAndCow.Where(t => t.Value.Item1 == item.From.Item1&&t.Value.Item2==(8-item.From.Item2+1)).FirstOrDefault().Key;
+                Panel from = RowAndCow.Where(t => t.Value.Item1 == item.From.Item1 && t.Value.Item2 == (8 - item.From.Item2 + 1)).FirstOrDefault().Key;
                 Panel to = RowAndCow.Where(t => t.Value.Item1 == item.To.Item1 && t.Value.Item2 == (8 - item.To.Item2 + 1)).FirstOrDefault().Key;
-                if (item.Fight != (50, 50))
+
+                if (item.Fight.Item1 != 50 && item.Fight.Item2 != 50)
                 {
                     Panel fight = RowAndCow.Where(t => t.Value.Item1 == item.Fight.Item1 && t.Value.Item2 == (8 - item.Fight.Item2 + 1)).FirstOrDefault().Key;
                     if (fight != null)
                     {
                         fight.BackgroundImage = null;
+                        Forward.Remove(fight);
+
+
                     }
+
                 }
                 if (from != null && to != null)
                 {
                     ServerStep(from, to);
 
                 }
+                if ((8 - item.To.Item2 + 1) == 8)
+                {
+                    if (White)
+                    {
+                        to.BackgroundImage = queenblack;
+                        to.BackgroundImage.Tag = "Black";
+
+                    }
+                    else
+                    {
+                        to.BackgroundImage = queenwhite;
+                        to.BackgroundImage.Tag = "White";
+                    }
+                }
+                string txt = $"1: {item.To.Item1}; - 2: {(8 - item.To.Item2 + 1)}";
+                //if (this.InvokeRequired)
+                //{
+                //    this.Invoke((MethodInvoker)(() =>
+                //    {
+                //        ChangeFormText(txt);
+
+                //    }
+                //    ));
+                //}
+                //else
+                //{
+                //    ChangeFormText(txt);
+                //}
                 Thread.Sleep(300);
             }
         }
@@ -1300,12 +1410,183 @@ namespace Course_Work_Vyckin
         private void button2_Click(object sender, EventArgs e)
         {
             MyIp = IPAddress.Parse(GetLocalIP());
-            button2.Enabled = false;
+            button3.Enabled = false;
         }
         void SwitchEnabledTableLayoutPanel(bool b)
         {
             tableLayoutPanel1.Enabled = b;
+            if (b)
+                ChangeLabelText(2, "Your turn!");
+            else
+                ChangeLabelText(2, "Enemy's turn!");
         }
+        void ChangeFormText(string txt)
+        {
+            this.Text = txt;
+        }
+        void ChangeLabelText(int number, string txt)
+        {
+            switch (number)
+            {
+                case 2:
+                    {
+                        label2.Text = txt;
+                        break;
+                    }
+                case 6:
+                    {
+                        label6.Text = txt;
+                        break;
+                    }
+                case 7:
+                    {
+                        label7.Text = txt;
+                        break;
+                    }
+            }
+        }
+        TcpClient tcpClient = new TcpClient();
+        public async void ClientStart()
+        {
+            var ipAddress = MyIp;
+            Random rnd = new Random();
+            int port = rnd.Next(10000, 60000);
+            var ipEndpoint = new IPEndPoint(ipAddress, port);
+            tcpClient = new TcpClient(ipEndpoint);
+
+            await tcpClient.ConnectAsync("192.168.0.26", 1024);
+
+            //var stream = tcpClient.GetStream();
+            var tokenSource = new CancellationTokenSource();
+            var cancellationToken = tokenSource.Token;
+            await Task.Run(() => ReadingThread(tcpClient, cancellationToken), cancellationToken);
+
+            //Task task1 = Task.Run(() => SendToServ("Ready"));
+            //taskArray[2] = taskFactory.StartNew(() => ConnectionStatusThread(tcpClient, tokenSource, cancellationToken), cancellationToken);
+
+            //Task.WaitAny(taskArray);
+
+            //stream.Close();
+            //tcpClient.Close();
+        }
+        private void ReadingThread(TcpClient tcpClient, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var buf = new byte[1024];
+                var stream = tcpClient.GetStream();
+
+                while (true)
+                {
+                    int i;
+                    while ((i = stream.Read(buf)) != 0)
+                    {
+                        //if (cancellationToken.IsCancellationRequested)
+                        //{
+                        //    AddTextToTxt("Server disconnected");
+                        //    return;
+                        //}
+
+                        var text = Encoding.Default.GetString(buf, 0, i);
+                        if (text == "Black")
+                            White = false;
+                        else if (text == "White")
+                            White = true;
+                        else if (text == "Start")
+                            SendToServ("Ready");
+                        else if (text == "Start Game")
+                        {
+                            MessageBox.Show($"{text}");
+                            if (this.InvokeRequired)
+                            {
+                                this.Invoke((MethodInvoker)(() =>
+                                {
+                                    GetTable();
+
+                                }
+                                ));
+                            }
+                            else
+                            {
+                                GetTable();
+                            }
+
+                        }
+                        else if (text == "Win")
+                            MessageBox.Show("You are win!!!");
+                        else if (text == "Lose")
+                            MessageBox.Show("You are lose!!!");
+                        else if (text == "Draw")
+                            MessageBox.Show("Draw!!!");
+                        else if (text == "Error")
+                            MessageBox.Show("Error, try next time");
+                        else if (text == "disc")
+                            MessageBox.Show("Your oponent was disconected. You are win!!!");
+                        else
+                        {
+                            try
+                            {
+                                List<StepInfo> info = JsonConvert.DeserializeObject<List<StepInfo>>(text);
+
+                                if (info != null)
+                                {
+                                    TranslateStep(info);
+                                    FightSteps = MandatoryFight();
+                                    //Thread.Sleep(1500);
+                                    if (this.InvokeRequired)
+                                    {
+                                        this.Invoke((MethodInvoker)(() =>
+                                        {
+                                            SwitchEnabledTableLayoutPanel(true);
+                                            if (White)
+                                            {
+                                                ChangeLabelText(6, Forward.Count.ToString());
+                                            }
+                                            else
+                                            {
+                                                ChangeLabelText(7, Forward.Count.ToString());
+                                            }
+                                        }
+                                        ));
+                                    }
+                                    else
+                                    {
+                                        SwitchEnabledTableLayoutPanel(true);
+                                        if (White)
+                                        {
+                                            ChangeLabelText(6, Forward.Count.ToString());
+                                        }
+                                        else
+                                        {
+                                            ChangeLabelText(7, Forward.Count.ToString());
+                                        }
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                        buf = new byte[1024];
+                    }
+                }
+            }
+            catch { }
+        }
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (tcpClient!=null&& tcpClient.Connected)
+            {
+                tcpClient.Close();
+                tcpClient.Dispose();
+            }
+        }
+
+            
     }
+
 
 }

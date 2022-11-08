@@ -8,9 +8,9 @@ namespace Server
 {
     public class StepInfo
     {
-        public (int,int) From { get; set; }
-        public (int,int) To { get; set; }
-        public (int,int) Fight { get; set; } = (50,50);
+        public MyTuple From { get; set; }
+        public MyTuple To { get; set; }
+        public MyTuple Fight { get; set; } = new MyTuple(50,50);
         //public bool Queen;
         public StepInfo() { }
     }
