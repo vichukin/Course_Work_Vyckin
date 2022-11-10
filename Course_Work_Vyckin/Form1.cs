@@ -1121,7 +1121,7 @@ namespace Course_Work_Vyckin
                             {
                                 if (Canfight[i].BackgroundImage != item.BackgroundImage && Canfight[i].BackgroundImage != null && Canfight[i].BackgroundImage.Tag != item.BackgroundImage.Tag)
                                 {
-                                    if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage)
+                                    if (Candef[i] == null || Canfight[i].BackgroundImage == Candef[i].BackgroundImage || item.BackgroundImage == Candef[i].BackgroundImage ||(Candef[i].BackgroundImage!=null&& item.BackgroundImage.Tag == Candef[i].BackgroundImage.Tag))
                                     {
                                         //MessageBox.Show(Candef[i].BackgroundImage.Tag.ToString());
                                         //MessageBox.Show(Canfight[i].BackgroundImage.Tag.ToString());
@@ -1227,20 +1227,20 @@ namespace Course_Work_Vyckin
             //await socket.SendToAsync(new ArraySegment<byte>(buf), SocketFlags.None, ServerIP);
             var stream = tcpClient.GetStream();
             await stream.WriteAsync(buf, 0, buf.Length);
-            if (this.InvokeRequired)
-            {
-                this.Invoke((MethodInvoker)(() =>
-                {
-                    ChangeFormText(Forward.Count.ToString());
+            //if (this.InvokeRequired)
+            //{
+            //    this.Invoke((MethodInvoker)(() =>
+            //    {
+            //        ChangeFormText(Forward.Count.ToString());
 
-                }
-                ));
-            }
-            else
-            {
-                ChangeFormText(Forward.Count.ToString());
+            //    }
+            //    ));
+            //}
+            //else
+            //{
+            //    ChangeFormText(Forward.Count.ToString());
 
-            }
+            //}
         }
 
         async void ListenerFunc(Socket socket)
@@ -1420,9 +1420,28 @@ namespace Course_Work_Vyckin
             else
                 ChangeLabelText(2, "Enemy's turn!");
         }
+        void StopGame()
+        {
+            if(this.InvokeRequired)
+            {
+                this.Invoke(() => StopGame());
+            }
+            else
+            {
+                tableLayoutPanel1.Enabled = false;
+            }
+        }
         void ChangeFormText(string txt)
         {
-            this.Text = txt;
+            if(this.InvokeRequired)
+            {
+                this.Invoke(() => ChangeFormText(txt));
+            }
+            else
+            {
+                this.Text = txt;
+            }
+            
         }
         void ChangeLabelText(int number, string txt)
         {
@@ -1513,15 +1532,38 @@ namespace Course_Work_Vyckin
 
                         }
                         else if (text == "Win")
+                        {
                             MessageBox.Show("You are win!!!");
+                            ChangeLabelText(2, "You are win!!!");
+                            StopGame();
+                            StopClient();
+                        }
                         else if (text == "Lose")
+                        {
                             MessageBox.Show("You are lose!!!");
+                            ChangeLabelText(2, "You are lose!!!");
+                            StopGame();
+                            StopClient();
+                        }
                         else if (text == "Draw")
+                        {
                             MessageBox.Show("Draw!!!");
+                            ChangeLabelText(2, "Draw!!!");
+                            StopGame();
+                            StopClient();
+                        }
                         else if (text == "Error")
+                        {
                             MessageBox.Show("Error, try next time");
+                            this.Close();
+                        }
                         else if (text == "disc")
+                        {
                             MessageBox.Show("Your oponent was disconected. You are win!!!");
+                            ChangeLabelText(2, "You are win!!!");
+                            StopGame();
+                            StopClient();
+                        }
                         else
                         {
                             try
@@ -1532,6 +1574,7 @@ namespace Course_Work_Vyckin
                                 {
                                     TranslateStep(info);
                                     FightSteps = MandatoryFight();
+                                    ChangeFormText(FightSteps.Count.ToString());
                                     //Thread.Sleep(1500);
                                     if (this.InvokeRequired)
                                     {
@@ -1578,13 +1621,17 @@ namespace Course_Work_Vyckin
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (tcpClient!=null&& tcpClient.Connected)
+            StopClient();
+        }
+        void StopClient()
+        {
+            if (tcpClient != null && tcpClient.Connected)
             {
                 tcpClient.Close();
                 tcpClient.Dispose();
+                tcpClient = null;
             }
         }
-
             
     }
 

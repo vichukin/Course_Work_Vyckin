@@ -241,7 +241,7 @@ namespace Server
             var buf = new byte[1024];
             while (!cancellationToken.IsCancellationRequested)
             {
-
+                int counter = 0;
                 int i;
                 while ((i = clientOneStream.Read(buf)) != 0)
                 {
@@ -302,7 +302,7 @@ namespace Server
                     {
                         List<StepInfo> st = JsonConvert.DeserializeObject<List<StepInfo>>(data);
                         //MessageBox.Show(data);
-                        int counter = 0;
+                        counter = 0;
                         foreach (var item in st)
                         {
                             if (item.Fight.Item1 != 50 && item.Fight.Item2 != 50)
@@ -368,16 +368,19 @@ namespace Server
                         }
                         else if ((WhiteFigures == 1 && BlackFigures == 1) || StepsWithOutFight == 20)
                         {
-                            if (White == clientTwo)
-                            {
-                                buf = Encoding.Default.GetBytes("Draw");
-                                clientTwoStream.Write(buf);
-                            }
-                            else if (Black == clientTwo)
-                            {
-                                buf = Encoding.Default.GetBytes("Draw");
-                                clientTwoStream.Write(buf);
-                            }
+                            //if (White == clientTwo)
+                            //{
+                            //    buf = Encoding.Default.GetBytes("Draw");
+                            //    clientTwoStream.Write(buf);
+                            //}
+                            //else if (Black == clientTwo)
+                            //{
+                            //    buf = Encoding.Default.GetBytes("Draw");
+                            //    clientTwoStream.Write(buf);
+                            //}
+                            buf = Encoding.Default.GetBytes("Draw");
+                            clientTwoStream.Write(buf);
+                            clientOneStream.Write(buf);
                             Game = false;
                         }
 
@@ -388,13 +391,20 @@ namespace Server
                 }
                 if (i == 0)
                 {
-                    //AddTextToTxt($"Client {clientOne.Client.LocalEndPoint} disconnected");
-                    buf = Encoding.Default.GetBytes("disc");
-                    clientTwoStream.Write(buf);
-                    tokenSource.Cancel();
-                    //CloseAllConn();
-                    this.Close();
-                    break;
+                    if ((BlackFigures == 0 || WhiteFigures == 0) || (BlackFigures == 1 && WhiteFigures == 1) || counter >= 20)
+                    {
+                        this.Close();
+                    }
+                    else
+                    {
+                        //AddTextToTxt($"Client {clientOne.Client.LocalEndPoint} disconnected");
+                        buf = Encoding.Default.GetBytes("disc");
+                        clientTwoStream.Write(buf);
+                        tokenSource.Cancel();
+                        //CloseAllConn();
+                        this.Close();
+                        break;
+                    }
                 }
             }
         }
